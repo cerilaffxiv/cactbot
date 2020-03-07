@@ -1,11 +1,11 @@
 'use strict';
 
 class CactbotLanguageFr extends CactbotLanguage {
-  constructor(playerName) {
-    super('fr', playerName);
+  constructor() {
+    super('fr');
   }
 
-  InitStrings(playerName) {
+  InitStrings() {
     this.kEffect = Object.freeze({
       BluntResistDown: 'Résistance au contondant réduite', // 0x23d, 0x335, 0x3a3
       VerstoneReady: 'VerTerre préparée', // 0x4d3
@@ -21,7 +21,14 @@ class CactbotLanguageFr extends CactbotLanguage {
       Medicated: 'Médicamenté', // tbc
       BattleLitany: 'Litanie combattante', // 0x312
       Embolden: 'Enhardissement', // 0x4d7
-      Balance: 'La Balance', // 0x53a
+      Arrow: 'La Flèche', // 0x75c
+      Balance: 'La Balance', // 0x75a
+      Bole: 'Le Tronc', // 0x75b
+      Ewer: 'L\'aiguière', // 0x75e
+      Spear: 'L\'épieu', // 0x75d
+      Spire: 'La Tour', // 0x75f
+      LadyOfCrowns: 'Reine Des Couronnes', // 0x755
+      LordOfCrowns: 'Roi Des Couronnes', // 0x754
       Hypercharge: 'Hypercharge', // 0x2b0
       LeftEye: 'Œil gauche', // 0x4a0
       RightEye: 'Œil droit', // 0x49f
@@ -29,13 +36,32 @@ class CactbotLanguageFr extends CactbotLanguage {
       Devotion: 'Dévouement', // 0x4bd
       FoeRequiem: 'Requiem ennemi', // up 0x8b, down 0x8c
       LeadenFist: 'Poings de plomb',
+      StormsEye: 'Œil de la tempête',
+      Devilment: 'Tango endiablé',
       TechnicalFinish: 'Final technique',
+      StandardFinish: 'Final classique',
+      Thundercloud: 'Nuage d\'orage',
+      Firestarter: 'Pyromane',
+      BattleVoice: 'Voix de combat',
+      Divination: 'Divination',
+      ArmysMuse: 'Bénédiction martiale',
+      ArmysEthos: 'Pacte martial',
+      PresenceOfMind: 'Présence d\'esprit',
+      Shifu: 'Shifû',
+      CircleOfPower: 'Manalignements',
 
+      Paralysis: 'Paralysie',
       Petrification: 'Pétrification',
       BeyondDeath: 'Outre-mort',
       Burns: 'Brûlure',
       Sludge: 'Emboué',
       Doom: 'Glas',
+      StoneCurse: 'Piège de pierre',
+      Imp: 'Kappa',
+      Toad: 'Crapaud',
+      FoolsTumble: 'Acrophobie illusoire', // 0x183
+      Dropsy: 'Œdème',
+      Throttle: 'Suffocation',
     });
 
     this.kUIStrings = Object.freeze({
@@ -44,7 +70,7 @@ class CactbotLanguageFr extends CactbotLanguage {
     });
 
     this.countdownStartRegex = function() {
-      return Regexes.Parse(/Début du combat dans (\y{Float}) secondes !/);
+      return Regexes.parse(/Début du combat dans (\y{Float}) secondes !/);
     };
     this.countdownEngageRegex = function() {
       return /:À l'attaque !/;

@@ -4,69 +4,82 @@ This is intended to be a comprehensive guide to log lines
 for folks who want to write ACT triggers for ff14.
 
 This guide was last updated for:
+
 * [FF14](https://na.finalfantasyxiv.com/lodestone/special/patchnote_log/) Patch 4.58
 * [FFXIV Plugin](https://github.com/ravahn/FFXIV_ACT_Plugin/releases) 1.7.2.13
 
+With updates for:
+
+* [FF14](https://na.finalfantasyxiv.com/lodestone/special/patchnote_log/) Patch 5.08
+* [FFXIV Plugin](https://github.com/ravahn/FFXIV_ACT_Plugin/releases) 2.0.4.0
+
 <!-- manually generated via https://imthenachoman.github.io/nGitHubTOC/ -->
 ## TOC
-- [Data Flow](#data-flow)
-  - [Viewing logs after a fight](#viewing-logs-after-a-fight)
-  - [Importing an old fight](#importing-an-old-fight)
-  - [Importing into ffxivmon](#importing-into-ffxivmon)
-- [Glossary of Terms](#glossary-of-terms)
-  - [Network Data](#network-data)
-  - [Network Log Lines](#network-log-lines)
-  - [ACT Log Lines](#act-log-lines)
-  - [Game Log Lines](#game-log-lines)
-  - [Object/Actor/Entity/Mob/Combatant](#objectactorentitymobcombatant)
-  - [Object ID](#object-id)
-  - [Ability ID](#ability-id)
-- [Log Line Overview](#log-line-overview)
-  - [00: LogLine](#00-logline)
-    - [Don't Write Triggers Against Game Log Lines](#dont-write-triggers-against-game-log-lines)
-  - [01: ChangeZone](#01-changezone)
-  - [02: ChangePrimaryPlayer](#02-changeprimaryplayer)
-  - [03: AddCombatant](#03-addcombatant)
-  - [04: RemoveCombatant](#04-removecombatant)
-  - [05: AddBuff](#05-addbuff)
-  - [06: RemoveBuff](#06-removebuff)
-  - [07: FlyingText](#07-flyingtext)
-  - [08: OutgoingAbility](#08-outgoingability)
-  - [0A: IncomingAbility](#0a-incomingability)
-  - [0B: PartyList](#0b-partylist)
-  - [0C: PlayerStats](#0c-playerstats)
-  - [0D: CombatantHP](#0d-combatanthp)
-  - [14: NetworkStartsCasting](#14-networkstartscasting)
-  - [15: NetworkAbility](#15-networkability)
-    - [Ability Flags](#ability-flags)
-    - [Ability Damage](#ability-damage)
-    - [Special Case Shifts](#special-case-shifts)
-    - [Ability Examples](#ability-examples)
-  - [16: NetworkAOEAbility](#16-networkaoeability)
-  - [17: NetworkCancelAbility](#17-networkcancelability)
-  - [18: NetworkDoT](#18-networkdot)
-  - [19: NetworkDeath](#19-networkdeath)
-  - [1A: NetworkBuff](#1a-networkbuff)
-  - [1B: NetworkTargetIcon (Head Markers)](#1b-networktargeticon-head-markers)
-  - [1C: NetworkRaidMarker](#1c-networkraidmarker)
-  - [1D: NetworkTargetMarker](#1d-networktargetmarker)
-  - [1E: NetworkBuffRemove](#1e-networkbuffremove)
-  - [1F: NetworkGauge](#1f-networkgauge)
-  - [20: NetworkWorld](#20-networkworld)
-  - [21: Network6D (Actor Control Lines)](#21-network6d-actor-control-lines)
-  - [22: NetworkNameToggle](#22-networknametoggle)
-  - [23: NetworkTether](#23-networktether)
-  - [FB: Debug](#fb-debug)
-  - [FC: PacketDump](#fc-packetdump)
-  - [FD: Version](#fd-version)
-  - [FE: Error](#fe-error)
-  - [FF: Timer](#ff-timer)
-- [Future Network Data Science](#future-network-data-science)
+
+* [Data Flow](#data-flow)
+  * [Viewing logs after a fight](#viewing-logs-after-a-fight)
+  * [Importing an old fight](#importing-an-old-fight)
+  * [Importing into ffxivmon](#importing-into-ffxivmon)
+* [Glossary of Terms](#glossary-of-terms)
+  * [Network Data](#network-data)
+  * [Network Log Lines](#network-log-lines)
+  * [ACT Log Lines](#act-log-lines)
+  * [Game Log Lines](#game-log-lines)
+  * [Object/Actor/Entity/Mob/Combatant](#objectactorentitymobcombatant)
+  * [Object ID](#object-id)
+  * [Ability ID](#ability-id)
+* [Log Line Overview](#log-line-overview)
+  * [00: LogLine](#00-logline)
+    * [Don't Write Triggers Against Game Log Lines](#dont-write-triggers-against-game-log-lines)
+  * [01: ChangeZone](#01-changezone)
+  * [02: ChangePrimaryPlayer](#02-changeprimaryplayer)
+  * [03: AddCombatant](#03-addcombatant)
+  * [04: RemoveCombatant](#04-removecombatant)
+  * [05: AddBuff](#05-addbuff)
+  * [06: RemoveBuff](#06-removebuff)
+  * [07: FlyingText](#07-flyingtext)
+  * [08: OutgoingAbility](#08-outgoingability)
+  * [0A: IncomingAbility](#0a-incomingability)
+  * [0B: PartyList](#0b-partylist)
+  * [0C: PlayerStats](#0c-playerstats)
+  * [0D: CombatantHP](#0d-combatanthp)
+  * [14: NetworkStartsCasting](#14-networkstartscasting)
+  * [15: NetworkAbility](#15-networkability)
+    * [Ability Flags](#ability-flags)
+    * [Ability Damage](#ability-damage)
+    * [Special Case Shifts](#special-case-shifts)
+    * [Ability Examples](#ability-examples)
+  * [16: NetworkAOEAbility](#16-networkaoeability)
+  * [17: NetworkCancelAbility](#17-networkcancelability)
+  * [18: NetworkDoT](#18-networkdot)
+  * [19: NetworkDeath](#19-networkdeath)
+  * [1A: NetworkBuff](#1a-networkbuff)
+  * [1B: NetworkTargetIcon (Head Markers)](#1b-networktargeticon-head-markers)
+  * [1C: NetworkRaidMarker](#1c-networkraidmarker)
+  * [1D: NetworkTargetMarker](#1d-networktargetmarker)
+  * [1E: NetworkBuffRemove](#1e-networkbuffremove)
+  * [1F: NetworkGauge](#1f-networkgauge)
+  * [20: NetworkWorld](#20-networkworld)
+  * [21: Network6D (Actor Control Lines)](#21-network6d-actor-control-lines)
+  * [22: NetworkNameToggle](#22-networknametoggle)
+  * [23: NetworkTether](#23-networktether)
+  * [24: LimitBreak](#24-limitbreak)
+  * [25: NetworkEffectResult](#25-networkeffectresult)
+  * [26: NetworkStatusEffects](#26-networkstatuseffects)
+  * [27: NetworkUpdateHP](#27-networkupdatehp)
+  * [FB: Debug](#fb-debug)
+  * [FC: PacketDump](#fc-packetdump)
+  * [FD: Version](#fd-version)
+  * [FE: Error](#fe-error)
+  * [FF: Timer](#ff-timer)
+* [Future Network Data Science](#future-network-data-science)
 
 ## Data Flow
 
 ![Alt text](https://g.gravizo.com/source/data_flow?https%3A%2F%2Fraw.githubusercontent.com%2Fquisquous%2Fcactbot%2Fmaster%2Fdocs%2FLogGuide.md)
-<details> 
+
+<!-- markdownlint-disable MD033 -->
+<details>
 <summary></summary>
 data_flow
   digraph G {
@@ -87,6 +100,7 @@ data_flow
   }
 data_flow
 </details>
+<!-- markdownlint-enable MD033 -->
 
 ### Viewing logs after a fight
 
@@ -160,8 +174,9 @@ These lines are still processed and filtered by the ffxiv plugin,
 and are (mostly) not raw network data.
 
 Here are some example network log lines:
-```
-21|2019-05-31T21:14:56.8980000-07:00|10686258|Tini Poutini|DF9|Fire IV|40002F21|Zombie Brobinyak|150003|3B9D4002|1C|DF98000|0|0|0|0|0|0|0|0|0|0|0|0|104815|348652|12000|12000|1000|1000|-767.7882|156.939|-672.0446|26285|28784|13920|15480|1000|1000|-771.8156|157.1111|-671.3281||8eaa0245ad01981b69fc1af04ea8f9a1
+
+```log
+21|2019-05-31T21:14:56.8980000-07:00|10532971|Tini Poutini|DF9|Fire IV|40002F21|Zombie Brobinyak|150003|3B9D4002|1C|DF98000|0|0|0|0|0|0|0|0|0|0|0|0|104815|348652|12000|12000|1000|1000|-767.7882|156.939|-672.0446|26285|28784|13920|15480|1000|1000|-771.8156|157.1111|-671.3281||8eaa0245ad01981b69fc1af04ea8f9a1
 30|2019-05-31T20:02:41.4560000-07:00|6b4|Boost|0.00|1069C23F|Potato Chippy|1069C23F|Potato Chippy|00|3394|3394||4f7b1fa11ec7a2746a8c46379481267c
 20|2019-05-31T20:02:41.4660000-07:00|105E3321|Tater Tot|2C9D|Peculiar Light|105E3321|Tater Tot||c375d8a2d1cf48efceccb136584ed250
 ```
@@ -175,6 +190,7 @@ The ffxiv plugin does not write the ACT log lines that plugins interact with
 to disk.
 
 The network log lines are used by some tools, such as:
+
 * fflogs uploader
 * ffxivmon
 * cactbot make_timeline utility
@@ -192,8 +208,9 @@ Data in ACT log lines is separated by colons, i.e. `:`.
 The log line type is in hex.
 
 Here is an example:
-```
-[21:16:44.288] 15:10686258:Potato Chippy:9C:Scathe:40001299:Striking Dummy:750003:90D0000:1C:9C8000:0:0:0:0:0:0:0:0:0:0:0:0:2778:2778:0:0:1000:1000:-653.9767:-807.7275:31.99997:26945:28784:6720:15480:1000:1000:-631.5208:-818.5244:31.95173:
+
+```log
+[21:16:44.288] 15:10532971:Potato Chippy:9C:Scathe:40001299:Striking Dummy:750003:90D0000:1C:9C8000:0:0:0:0:0:0:0:0:0:0:0:0:2778:2778:0:0:1000:1000:-653.9767:-807.7275:31.99997:26945:28784:6720:15480:1000:1000:-631.5208:-818.5244:31.95173:
 ```
 
 ### Game Log Lines
@@ -216,7 +233,7 @@ This could be the player, Bahamut, Eos, a Striking Dummy.
 Object ids are 4 byte identifiers used for all types of objects.
 
 Player ids always start with the byte `10`,
-e.g. `1069C23F` or `10686258`.
+e.g. `1069C23F` or `10532971`.
 
 Enemy and pet ids always start with the byte `40`,
 e.g. `4000A848` or `4000A962`.
@@ -242,7 +259,7 @@ You can use xivapi.com to look up a particular action, as sometimes these are
 listed as "Unknown" from the ffxiv plugin if it hasn't updated yet.
 For example, Fire IV has the ability id 0xDF9 = 3577,
 so this link will give you more information about it:
-https://xivapi.com/action/3577?columns=ID,Name,Description,ClassJobCategory.Name
+<https://xivapi.com/action/3577?columns=ID,Name,Description,ClassJobCategory.Name>
 
 This works for both players and enemies, abilities and spells.
 
@@ -264,8 +281,12 @@ The examples in these sections do not include the time prefix for brevity.
 
 ### 00: LogLine
 
+Structure:
+`00:[Message Type ID]:Message displayed In-Game`
+
 Examples:
-```
+
+```log
 00:0839:The Right Hand of Bahamut is no longer sealed!
 00:0840:The Final Coil of Bahamut - Turn 2 completion time: 8:37.
 00:0b3a:You are defeated by the oppressor 0.5.
@@ -284,6 +305,7 @@ the full set of LogTypes is not well-documented.
 #### Don't Write Triggers Against Game Log Lines
 
 There are a number of reasons to avoid basing triggers on game log lines:
+
 * show up later than ACT log lines (often up to half a second)
 * [do not always show up](https://github.com/ravahn/FFXIV_ACT_Plugin/issues/100)
 * inconsistent text (gains effect vs suffers effect, begins casting vs readies, you vs player name)
@@ -300,8 +322,12 @@ such as sealing and unsealing of zones, or boss rp text for phase transitions.
 
 This message is sent when first logging in and whenever the zone is changed.
 
+Structure:
+`01:Changed Zone to [Zone Name].`
+
 Examples:
-```
+
+```log
 01:Changed Zone to The Lavender Beds.
 01:Changed Zone to The Unending Coil Of Bahamut (Ultimate).
 ```
@@ -310,7 +336,12 @@ Examples:
 
 This redundant message follows every [ChangeZone](#01-changezone) message to indicate the name of the player.
 
-```
+Structure:
+`02:Changed primary player to [Player Name].`
+
+Examples
+
+```log
 02:Changed primary player to Potato Chippy.
 02:Changed primary player to Tini Poutini.
 ```
@@ -320,29 +351,34 @@ This redundant message follows every [ChangeZone](#01-changezone) message to ind
 This message is sent when a new object is added to the scene or
 becomes close enough to the player that they can view its actions.
 
+Structure:
+`03:[ObjectId]:Added new combatant [Combatant Name].  Job: [Job-ID] Level: [Level-Value] Max HP: [Max-HP-Value] Max MP: [Max-MP-Value] Pos: ([X-Pos],[Z-Pos],[Y-Pos]).`
+
 Examples:
-```
-03:Added new combatant Pagos Deepeye.  Job: 0 Level: 70 Max HP: 348652 Max MP: 12000 Pos: (-720.9337,90.80706,-679.6056).
-03:Added new combatant Tater Tot (Jenova).  Job: 28 Level: 70 Max HP: 39835 Max MP: 16461 Pos: (-143.9604,168.5795,-4.999999).
+
+```log
+03:40123456:Added new combatant Pagos Deepeye.  Job: N/A Level: 70 Max HP: 348652 Max MP: 12000 Pos: (-720.9337,90.80706,-679.6056).
+03:10987654:Added new combatant Tater Tot (Jenova).  Job: 28 Level: 70 Max HP: 39835 Max MP: 16461 Pos: (-143.9604,168.5795,-4.999999).
 ```
 
 This combatant may be invisible and fake.  The real ones have more HP.
 For example, at the start of t5 you will see messages like this:
-```
-03:Added new combatant Twintania.  Job: 0 Level: 50 Max HP: 2778 Max MP: 0 Pos: (-6.27745,-5.304218,50.00586).
-03:Added new combatant Twintania.  Job: 0 Level: 50 Max HP: 2778 Max MP: 0 Pos: (-6.27745,-5.304218,50.00586).
-03:Added new combatant Twintania.  Job: 0 Level: 50 Max HP: 2778 Max MP: 0 Pos: (-6.27745,-5.304218,50.00586).
-03:Added new combatant Twintania.  Job: 0 Level: 50 Max HP: 2778 Max MP: 0 Pos: (-6.27745,-5.304218,50.00586).
-03:Added new combatant Twintania.  Job: 0 Level: 50 Max HP: 2778 Max MP: 0 Pos: (-6.27745,-5.304218,50.00586).
-03:Added new combatant Twintania.  Job: 0 Level: 50 Max HP: 2778 Max MP: 0 Pos: (-6.27745,-5.304218,50.00586).
-03:Added new combatant The Scourge Of Meracydia.  Job: 0 Level: 50 Max HP: 20307 Max MP: 0 Pos: (-8.42909,17.4637,50.15326).
-03:Added new combatant Twintania.  Job: 0 Level: 50 Max HP: 514596 Max MP: 0 Pos: (2.251731,4.753533,50.03756).
-03:Added new combatant Twintania.  Job: 0 Level: 50 Max HP: 2778 Max MP: 0 Pos: (7.752398,1.972908,50.04842).
-03:Added new combatant Twintania.  Job: 0 Level: 50 Max HP: 2778 Max MP: 0 Pos: (7.752398,1.972908,50.04842).
-03:Added new combatant Twintania.  Job: 0 Level: 50 Max HP: 2778 Max MP: 0 Pos: (-6.27745,-5.304218,50.00586).
-03:Added new combatant Twintania.  Job: 0 Level: 50 Max HP: 2778 Max MP: 0 Pos: (-6.27745,-5.304218,50.00586).
-03:Added new combatant The Scourge Of Meracydia.  Job: 0 Level: 50 Max HP: 20307 Max MP: 0 Pos: (8.960839,18.12193,50.66183).
-03:Added new combatant The Scourge Of Meracydia.  Job: 0 Level: 50 Max HP: 20307 Max MP: 0 Pos: (18.30528,3.778645,50.44044).
+
+```log
+03:40123450:Added new combatant Twintania.  Job: N/A Level: 50 Max HP: 2778 Max MP: 0 Pos: (-6.27745,-5.304218,50.00586).
+03:40123451:Added new combatant Twintania.  Job: N/A Level: 50 Max HP: 2778 Max MP: 0 Pos: (-6.27745,-5.304218,50.00586).
+03:40123452:Added new combatant Twintania.  Job: N/A Level: 50 Max HP: 2778 Max MP: 0 Pos: (-6.27745,-5.304218,50.00586).
+03:40123453:Added new combatant Twintania.  Job: N/A Level: 50 Max HP: 2778 Max MP: 0 Pos: (-6.27745,-5.304218,50.00586).
+03:40123454:Added new combatant Twintania.  Job: N/A Level: 50 Max HP: 2778 Max MP: 0 Pos: (-6.27745,-5.304218,50.00586).
+03:40123455:Added new combatant Twintania.  Job: N/A Level: 50 Max HP: 2778 Max MP: 0 Pos: (-6.27745,-5.304218,50.00586).
+03:40123456:Added new combatant The Scourge Of Meracydia.  Job: N/A Level: 50 Max HP: 20307 Max MP: 0 Pos: (-8.42909,17.4637,50.15326).
+03:40123457:Added new combatant Twintania.  Job: N/A Level: 50 Max HP: 514596 Max MP: 0 Pos: (2.251731,4.753533,50.03756).
+03:40123458:Added new combatant Twintania.  Job: N/A Level: 50 Max HP: 2778 Max MP: 0 Pos: (7.752398,1.972908,50.04842).
+03:40123459:Added new combatant Twintania.  Job: N/A Level: 50 Max HP: 2778 Max MP: 0 Pos: (7.752398,1.972908,50.04842).
+03:40123460:Added new combatant Twintania.  Job: N/A Level: 50 Max HP: 2778 Max MP: 0 Pos: (-6.27745,-5.304218,50.00586).
+03:40123461:Added new combatant Twintania.  Job: N/A Level: 50 Max HP: 2778 Max MP: 0 Pos: (-6.27745,-5.304218,50.00586).
+03:40123462:Added new combatant The Scourge Of Meracydia.  Job: N/A Level: 50 Max HP: 20307 Max MP: 0 Pos: (8.960839,18.12193,50.66183).
+03:40123463:Added new combatant The Scourge Of Meracydia.  Job: N/A Level: 50 Max HP: 20307 Max MP: 0 Pos: (18.30528,3.778645,50.44044).
 ```
 
 In heavy zones (e.g. Eureka), combatants may be culled if there are too many
@@ -358,11 +394,14 @@ This message is sent when an object is removed from the scene, either because
 the player has moved too far away from it, it has died, or the player has
 changed zones.
 
-Examples:
-```
-04:Removing combatant Potato Chippy.  Max HP: 28784. Pos: (-776.6765,152.5261,-671.2197)
-04:Removing combatant Frozen Void Dragon.  Max HP: 348652. Pos: (-710.7075,49.39039,-646.7071)
+Structure:
+`04:[ObjectId]:Removing combatant [Combatant Name].  Max HP: [Max-HP-Value]. Pos: ([X-Pos],[Z-Pos],[Y-Pos])`
 
+Examples:
+
+```log
+04:10987654:Removing combatant Potato Chippy.  Max HP: 28784. Pos: (-776.6765,152.5261,-671.2197)
+04:40123462:Removing combatant Frozen Void Dragon.  Max HP: 348652. Pos: (-710.7075,49.39039,-646.7071)
 ```
 
 ### 05: AddBuff
@@ -370,8 +409,12 @@ Examples:
 This is the memory-parsing equivalent of [1A: NetworkBuff](#1a-networkbuff).
 Do not write triggers against this as this is only emitted when parsing from memory.
 
+Structure:
+`05:[Target Name] gains the effect of [Status] from [Source Name]`
+
 Examples:
-```
+
+```log
 05:Striking Dummy gains the effect of Reprisal from Tini Poutini.
 05:Potato Chippy gains the effect of Passage Of Arms from Potato Chippy.
 ```
@@ -381,8 +424,12 @@ Examples:
 This is the memory-parsing equivalent of [1E: NetworkBuffRemove](#1e-networkbuffremove).
 Do not write triggers against this as this is only emitted when parsing from memory.
 
+Structure:
+`06:[Target Name] loses the effect of [Status] from [Source Name]`
+
 Examples:
-```
+
+```log
 06:Striking Dummy loses the effect of Reprisal from Tini Poutini.
 06:Striking Dummy loses the effect of Circle Of Scorn from Potato Chippy.
 ```
@@ -392,10 +439,13 @@ Examples:
 This is the memory-parsing equivalent of [18: NetworkDoT](#18-networkdot).
 Do not write triggers against this as this is only emitted when parsing from memory.
 
-Examples:
-```
-07:DoT tick on Striking Dummy for 509 damage.
+Structure:
+`07:[Type Name] tick on [Source Name] for [Value] damage.`
 
+Examples:
+
+```log
+07:DoT tick on Striking Dummy for 509 damage.
 ```
 
 ### 08: OutgoingAbility
@@ -403,8 +453,12 @@ Examples:
 This is the memory-parsing equivalent of [14: NetworkStartsCasting](#14-networkstartscasting).
 Do not write triggers against this as this is only emitted when parsing from memory.
 
+Structure:
+`08:[Source Name] starts using [Ability Name] on [Target Name].`
+
 Examples:
-```
+
+```log
 08:Potato Chippy starts using Circle Of Scorn on Striking Dummy.
 ```
 
@@ -414,8 +468,9 @@ This is the memory-parsing equivalent of [15: NetworkAbility](#15-networkability
 Do not write triggers against this as this is only emitted when parsing from memory.
 
 Examples:
-```
-0A:10686258:Potato Chippy:17:Circle Of Scorn:40001299:Striking Dummy:710003:6850000:ef010f:f80000:0:0:0:0:0:0:0:0:0:0:0:0:2778:2778:0
+
+```log
+0A:10532971:Potato Chippy:17:Circle Of Scorn:40001299:Striking Dummy:710003:6850000:ef010f:f80000:0:0:0:0:0:0:0:0:0:0:0:0:2778:2778:0
 ```
 
 ### 0B: PartyList
@@ -424,7 +479,17 @@ Lines are printed, but with blank data.  :sob:
 
 ### 0C: PlayerStats
 
-Lines are printed, but with blank data.
+This message is sent whenever your player's stats change and upon entering a new zone/instance.
+
+Structure:
+
+`0C:Player Stats: JOB:STR:DEX:VIT:INT:MND:PIE:ATTACK POWER:DHIT:CRIT:ATTACK MAGIC POTENCY:HEAL MAGIC POTENCY:DET:SkS:SpS:0:TENACITY`
+
+Example:
+
+```log
+0C:Player Stats: 23:305:4240:4405:290:275:340:4240:2694:2795:290:275:2473:578:380:0:380
+```
 
 ### 0D: CombatantHP
 
@@ -436,8 +501,12 @@ This is often used for phase change triggers.
 
 ![include hp screenshot](images/logguide_includehp.png)
 
+Structure:
+`0D:[Target Name] HP at [HP-Value]%.`
+
 Examples:
-```
+
+```log
 0D:Striking Dummy HP at 96%.
 0D:Tini Poutini HP at 98%.
 ```
@@ -448,8 +517,12 @@ For abilities with cast bars, this is the log line that specifies that a player 
 This precedes a log line of type `15`, `16`, or `17`
 where it uses the ability or is interrupted.
 
+Structure:
+`14:[Source ID]:[Source Name] starts using [Ability Name] on [Target Name].`
+
 Examples:
-```
+
+```log
 14:5B2:Twintania starts using Death Sentence on Potato Chippy.
 14:DF9:Tini Poutini starts using Fire IV on Striking Dummy.
 ```
@@ -470,12 +543,12 @@ If your trigger includes the message type, it is usually best to write your rege
 Ground AOEs that don't hit anybody are type `16`.
 
 Example:
-`15:10686258:Tini Poutini:07:Attack:40001299:Striking Dummy:710003:9420000:0:0:0:0:0:0:0:0:0:0:0:0:0:0:2778:2778:0:0:1000:1000:-653.9767:-807.7275:31.99997:66480:74095:4560:4560:1000:1000:-653.0394:-807.9677:31.99997:`
+`15:10532971:Tini Poutini:07:Attack:40001299:Striking Dummy:710003:9420000:0:0:0:0:0:0:0:0:0:0:0:0:0:0:2778:2778:0:0:1000:1000:-653.9767:-807.7275:31.99997:66480:74095:4560:4560:1000:1000:-653.0394:-807.9677:31.99997:`
 
 Index | Example | Explanation
 --- | --- | ---
 0 | 15 | type id (in hex)
-1 | 10686258 | caster object id
+1 | 10532971 | caster object id
 2 | Tini Poutini | caster name
 3 | 07 | ability id
 4 | Attack | ability name
@@ -493,7 +566,7 @@ Index | Example | Explanation
 29 | -653.9767 | target x position
 30 | -807.7275 | target y position
 31 | 31.99997 | target z position
-32 | 66480 | caster current hp 
+32 | 66480 | caster current hp
 33 | 74095 | caster max hp
 34 | 4560 | caster current mp
 35 | 4560 | caster max mp
@@ -513,6 +586,7 @@ This means that there's a number of caveats going on to handling all the data in
 #### Ability Flags
 
 Damage bitmasks:
+
 * 0x01 = dodge
 * 0x03 = damage done
 * 0x05 = blocked damage
@@ -523,6 +597,7 @@ Damage bitmasks:
 * 0x300 = crit direct hit damage
 
 Heal bitmasks:
+
 * 0x00004 = heal
 * 0x10004 = crit heal
 
@@ -561,7 +636,7 @@ In this case, consider the bytes as ABCD, where C is 0x40.
 The total damage is calculated as D A (B-D) as three bytes together interpreted
 as an integer.
 
-For example, `424E400F` becomes `0F 42 (4E - OF = 3F) => `0F 42 3F` => 999999
+For example, `424E400F` becomes `0F 42 (4E - OF = 3F)` => `0F 42 3F` => 999999
 
 #### Special Case Shifts
 
@@ -581,6 +656,7 @@ These are always followed by `4C3`.
 Therefore, these should also be shifted over two to find the real flags.
 
 #### Ability Examples
+
 1) 18216 damage from Grand Cross Alpha (basic damage)
 `16:40001333:Neo Exdeath:242B:Grand Cross Alpha:1048638C:Tater Tot:750003:47280000:1C:80242B:0:0:0:0:0:0:0:0:0:0:0:0:36906:41241:5160:5160:880:1000:0.009226365:-7.81128:-1.192093E-07:16043015:17702272:12000:12000:1000:1000:-0.01531982:-19.02808:0:`
 
@@ -609,8 +685,12 @@ See: [15: NetworkAbility](#15-networkability) for a discussion of the difference
 
 For abilities with cast bars, this is the log line that specifies that the cast was cancelled either due to movement or an interrupt and it won't go off.
 
+Structure:
+`17:[Source ID]:[Source Name]:[Ability ID]:[Ability Name]:Cancelled.`
+
 Examples:
-```
+
+```log
 17:105EDD08:Potato Chippy:1D07:Stone IV:Cancelled:
 17:40000FE3:Raiden:3878:Ultimate Zantetsuken:Cancelled:
 ```
@@ -626,8 +706,12 @@ Instead, if a boss has 20 dots applied to it,
 then it returns the total tick amount for all of these dots.
 Parsers are left to estimate what the individual dot amounts are.
 
+Structure:
+`18:[Type Name] on [Source Name] for [Value] damage.`
+
 Examples:
-```
+
+```log
 18:DoT Tick on Ovni for 13003 damage.
 18:HoT Tick on Tini Poutini for 2681 damage.
 18:Shadow Flare DoT Tick on Arsenal Centaur for 151 damage.
@@ -639,8 +723,12 @@ Ground effect dots get listed separately.
 
 This message corresponds to an actor being defeated and killed.  This usually comes along with a battle log message such as `You defeat the worm's heart.`
 
+Structure:
+`19:[Target Name] was defeated by [Source Name].`
+
 Examples:
-```
+
+```log
 19:Tini Poutini was defeated by Ovni.
 19:The Scourge Of Meracydia was defeated by Unknown.
 ```
@@ -649,14 +737,18 @@ Examples:
 
 This message is the "gains effect" message for players and mobs gaining effects whether they are good or bad.
 
+Structure:
+`1A:[ObjectId]:[Target Name] gains the effect of [Status] from [Source Name] for [Float_Value] Seconds`
+
 Exampless:
-```
-1A:Tini Poutini gains the effect of Sprint from Tini Poutini for 20.00 Seconds.
-1A:Potato Chippy gains the effect of Protect from Tater Tot for 1800.00 Seconds.
-1A:Ovni gains the effect of Aero II from  for 18.00 Seconds.
+
+```log
+1A:105EDD08:Tini Poutini gains the effect of Sprint from Tini Poutini for 20.00 Seconds.
+1A:10660108:Potato Chippy gains the effect of Protect from Tater Tot for 1800.00 Seconds.
+1A:405EFA09:Ovni gains the effect of Aero II from  for 18.00 Seconds.
 ```
 
-The name can be blank here (and there will be two spaces like the above example if that's the case).
+The "Source Name" can be blank here (and there will be two spaces like the above example if that's the case).
 
 This corresponds to game log messages that look like this:
 `00:12af:The worm's heart suffers the effect of Slashing Resistance Down.`
@@ -673,21 +765,77 @@ This matters for cases such as ucob Nael phase doom debuffs.
 ### 1B: NetworkTargetIcon (Head Markers)
 
 Structure:
-`1B:Player ObjectId:Player Name:Unknown1 (4 bytes):Unknown2 (4 bytes):Type (4 bytes):0000:0000:0000`
+`1B:[ObjectId]:[Player Name]:[Unknown1 (4 bytes)]:[Unknown2 (4 bytes)]:[Type (4 bytes)]:0000:0000:0000`
 
 Examples:
-```
-1B:10686258:Tini Poutini:0000:0000:0027:0000:0000:0000:
+
+```log
+1B:10532971:Tini Poutini:0000:0000:0027:0000:0000:0000:
 1B:106F0213:Potato Chippy:0000:0EE3:0061:0000:0000:0000:
 ```
 
-The different headmarker types (e.g. `0027` or `0061` in the examples above) are consistent across fights in which marker they represent.  For example, `0039` is the meteor marker in Shinryu Ex adds phase and the Baldesion Arsenal Ozma fight.  The data following the type always appears to be zero in practice, although `Unknown1` and `Unknown2` infrequently have non-zero values.
+The different headmarker types (e.g. `0027` or `0061` in the examples above) are consistent across fights as far as which marker they *visually* represent. (Correct *resolution* for the marker mechanic may not be.)  For example, `0039` is the meteor marker in Shinryu EX adds phase and the Baldesion Arsenal Ozma fight.  The data following the type always appears to be zero in practice, although `Unknown1` and `Unknown2` infrequently have non-zero values.
 
 Note: It's unclear when the head markers disappear.  Maybe `Unknown2` is a duration time? It's not clear what either of these unknown values mean.
 
 Also, this appears to only be true on later fights.
 Turn 5 fireball and conflag headmarkers are actions from Twintania and not `1B` lines.
 It seems likely this was implemented later and nobody wanted to break old content by updating it to use newer types.
+
+Marker Code | Name | Sample Locations | Consistent meaning?
+--- | --- | --- | ---
+000[1-2, 4] | Prey Circle (orange) | o6s, The Burn boss 2 | Yes
+0007 | Green Meteor | t9n/s | N/A
+0008 | Ghost Meteor | t9n/s | N/A
+0009 | Red Meteor | t9n/s | N/A
+000A | Yellow Meteor | t9n/s | N/A
+000D | Devour Flower | t6n/s, Sohm Al boss 1 | Yes
+000E | Prey Circle (blue) | t6n/s, o7s | No
+0010 | Teal Crystal | Ultima Weapon Ultimate |N/A
+0011 | Heavenly Laser (red) | t8n/s, e1n | No
+0017 | Red Pinwheel | Sohm Al boss 2, Susano N/EX, e3n/s | No
+0028 | Earth Shaker | Sephirot N/EX, o4s | Yes
+001C | Gravity Puddle | e1n | N/A
+001E | Prey Sphere (orange) | Dun Scaith boss 3, o7n/s | No
+001F | Prey Sphere (blue) | t10 | N/A
+003[2-5] | Sword Markers 1-4 | Ravana N/EX, Twinning boss 1 | N/A
+0037 | Red Dorito | Weeping City boss 2, Ridorana boss 1 | Yes
+0039 | Purple Spread Circle (large) | Ravana N/EX, Shinryu EX | Yes
+003E | Stack Marker (bordered) | o8n/s, Dun Scaith | Yes
+0046 | Green Pinwheel | Dun Scaith boss 1, o5n/s | Yes
+004B | Acceleration Bomb | Weeping City boss 3, Susano N/EX, o4s | Yes
+004C | Purple Fire Circle (large) | e2n/s | Yes
+0054 | Thunder Tether (orange) | Titania EX | N/A
+0057 | Flare | o4n/s, e2n/s | Yes
+005C | Prey (dark) | Dun Scaith boss 3/4, Holminster Switch boss 3 | No
+005D | Stack Marker (tank--no border) | Dun Scaith boss 4, e4s | Yes
+0060 | Orange Spread Circle (small) | Hades N | Yes
+0061 | Chain Tether (orange) | The Vault boss 3, Shinryu N/EX | Yes
+0064 | Stack Marker (bordered) | o3s, Ridorana boss 3 | Yes
+0065 | Spread Bubble | o3s, Byakko EX | N/A
+006E | Levinbolt | Susano EX | N/A
+0076 | Prey (dark) | Bahamut Ultimate | N/A
+0078 | Orange Spread Circle (large) | Akadaemia Anyder | Yes
+007B | Scatter (animated Play symbol) | Rabanastre boss 4 | N/A
+007C | Turn Away (animated eye symbol) | Rabanastre boss 4 | N/A
+007E | Green Crystal | Shinryu N/EX | No
+0083 | Sword Meteor (Tsukuyomi) | Tsukuyomi EX | N/A
+0087 | Prey Sphere (blue) | Akadaemia Anyder | N/A
+008A | Orange Spread Circle (large) | Innocence N/EX, Orbonne boss 3 | Yes
+008B | Purple Spread Circle (small) | Ridorana boss 1, Hades N | Yes
+008E | Death From Above | o10s | N/A
+008F | Death From Below | o10s | N/A
+009[1-8] | Fundamental Synergy Square/Circle | o12s | N/A
+00A1 | Stack Marker (bordered) | Titania N/EX | Yes
+00A9 | Orange Spread Circle (small) | o11n/s, e3n/s | Yes
+00AB | Green Poison Circle | Qitana Ravel | N/A
+00AC | Reprobation Tether | Innocence EX | N/A
+00AE | Blue Pinwheel | Sohm Al boss 2 | N/A
+00B9 | Yellow Triangle (spread) | e4s | N/A
+00BA | Orange Square (stack) | e4s |N/A
+00BB | Blue Square (big spread) | e4s |N/A
+00BD | Purple Spread Circle (giant) | TItania N/EX | Yes
+00BF | Granite Gaol | e4s | N/A
 
 ### 1C: NetworkRaidMarker
 
@@ -702,11 +850,15 @@ Unknown?
 This is the paired "end" message to the [1A: NetworkBuff](#1a-networkbuff) "begin" message.
 This message corresponds to the loss of effects (either positive or negative).
 
+Structure:
+`1E:[ObjectId]:[Target Name] loses the effect of [Status] from [Source Name]`
+
 Examples:
-```
-1E:Tini Poutini loses the effect of Sprint from Tini Poutini.
-1E:Potato Chippy gains the effect of Protect from Tater Tot.
-1E:Ovni gains the effect of Aero II.
+
+```log
+1E:10657868:Tini Poutini loses the effect of Sprint from Tini Poutini.
+1E:10299838:Potato Chippy loses the effect of Protect from Tater Tot.
+1E:40686258:Ovni loses the effect of Aero II.
 ```
 
 ### 1F: NetworkGauge
@@ -714,14 +866,45 @@ Examples:
 Info about the current player's job gauge.
 
 Examples:
-```
-1F:10686258:Tini Poutini:C8000019:FD32:D0DF8C00:7FC0
-1F:10686258:Potato Chippy:C863AC19:1000332:D0DF8C00:7FC0
+
+```log
+1F:10532971:Tini Poutini:C8000019:FD32:D0DF8C00:7FC0
+1F:10532971:Potato Chippy:C863AC19:1000332:D0DF8C00:7FC0
 ```
 
-This data is all raw and job specific.  Pull requests welcome to explain this better.
+Each of the values after the name represents the memory for the job gauge,
+interpreted as a 4 byte integer.
+To get back to the original memory, zero pad out to 4 bytes,
+and then reverse the bytes (because little endian).
 
-Unfortunately, network data about other player's gauge is not sent and so you are unable to see these abilities.
+For example, take this line:
+`1F:10532971:Tini Poutini:C8000019:FD32:D0DF8C00:7FC0`
+
+Zero extended:
+`:C8000019:0000FD32:D0DF8C00:`
+
+Reversed:
+`19 00 00 C8 32 FD 00 00 00 8C DF D0`
+
+The first byte is always the job.
+The remaining bytes are a copy of the job gauge memory.
+
+This job is `0x19` (or black mage).
+Interpreting these [values](https://github.com/goaaats/Dalamud/blob/4ad5bee0c62128315b0a247466d28f42264c3069/Dalamud/Game/ClientState/Structs/JobGauge/BLMGauge.cs) means:
+
+* `short TimeUntilNextPolyglot` = 0x0000 = 0
+* `short ElementTimeRemaining` = 0x32C8 = 13000ms
+* `byte ElementStance` = 0xFD = -3 (three stacks of ice)
+* `byte NumUmbralHearts` = 0x00 = 0
+* `byte EnoState` = 0x00 = 0 (no enochian)
+
+There are a number of references for job gauge memory:
+
+  1) [cactbot FFXIVProcess code](https://github.com/quisquous/cactbot/blob/a4d27eca3628d397cb9f5638fad97191566ed5a1/CactbotOverlay/FFXIVProcessIntl.cs#L267)
+  1) [Dalamud code](https://github.com/goaaats/Dalamud/blob/4ad5bee0c62128315b0a247466d28f42264c3069/Dalamud/Game/ClientState/Structs/JobGauge/NINGauge.cs#L15)
+
+Unfortunately, network data about other player's gauge is not sent.
+You are unable to see the abilities of other players, only your own.
 (This is probably by design to cut down on the amount of network data sent.)
 
 ### 20: NetworkWorld
@@ -731,20 +914,22 @@ Unused.
 ### 21: Network6D (Actor Control Lines)
 
 Actor control lines are for several miscellaneous zone commands:
+
 * changing the music
 * resetting an entire zone after a wipe
 * limit gauge for bosses
 * updates on time remaining (periodically, and after a clear)
 
+Structure:
+`21:ZoneID (4 bytes):Command (4 bytes):Data (4x 4? byte extra data)`
+
 Examples:
-```
+
+```log
 21:8003753A:40000010:00:00:00:00
 21:80034E52:8000000D:1601:00:00:00
 21:80037543:80000004:257:00:00:00
 ```
-
-Structure:
-`21:ZoneID (4 bytes):Command (4 bytes):Data (4x 4? byte extra data)`
 
 The ZoneID is constant for a particular zone across games,
 but does not necessarily reflect the same ZoneID from the [ChangeZone](#01-changezone) message.
@@ -754,6 +939,7 @@ Wipes on most raids and primals these days can be detected via this regex:
 such as coil turns where there is a zone seal.
 
 Known types:
+
 * Initial commence: `21:zone:40000001:time:` (time is the lockout time in seconds)
 * Recommence: `21:zone:40000006:time:00:00:00`
 * Lockout time adjust: `21:zone:80000004:time:00:00:00`
@@ -763,6 +949,7 @@ Known types:
 * Wipe 2: `21:zone:40000012:00:00:00:00` (always comes after Wipe 1)
 
 Still unknown:
+
 * `21:zone:40000003:00:00:00:00` (victory?)
 * `21:zone:40000005:00:00:00:00` (fade to black during wipe?)
 * `21:zone:40000007:00:00:00:00`
@@ -772,8 +959,12 @@ Still unknown:
 This log message toggles whether the nameplate for a particular entity is visible or not.
 This can help you know when a mob is targetable, for example.
 
+Structure:
+`22:[ObjectId]:[Target Name]:[ObjectId]:[Target Name]:[Display State]`
+
 Examples:
-```
+
+```log
 22:105E3321:Tini Poutini:105E3321:Tini Poutini:01
 22:40018065:Twintania:40018065:Twintania:00
 ```
@@ -781,17 +972,19 @@ Examples:
 ### 23: NetworkTether
 
 This log line is for tethers between enemies or enemies and players.
-This does not appear to be used for player to player tethers like dragonsight or cover.
-
-Examples:
-```
-23:40015B4E:Weapons Node:40015B4D:Gravity Node:751E:0000:000E:40015B4D:000F:7F4B:
-23:4000E84B:Zu Cockerel:1048638C:Tini Poutini:0000:0000:0006:1048638C:000F:7FEF:
-23:40001614:Omega:10686258:Potato Chippy:0023:0000:0054:10686258:000F:0000:
-```
+This does not appear to be used for player to player skill tethers like dragonsight or cover.
+(It can be used for enemy-inflicted player to player tethers such as burning chains in Shinryu N/EX.)
 
 Structure:
-`23:SourceId:SourceName:TargetId:TargetName:Unknown1 (4 bytes):Unknown2 (4 bytes):Type (4 bytes):TargetId:Unknown3 (4 bytes):Unknown4 (4 bytes):`
+`23:[SourceId]:[SourceName]:[TargetId]:[TargetName]:[Unknown1 (4 bytes)]:[Unknown2 (4 bytes)]:[Type (4 bytes)]:[TargetId]:[Unknown3 (4 bytes)]:[Unknown4 (4 bytes)]:`
+
+Examples:
+
+```log
+23:40015B4E:Weapons Node:40015B4D:Gravity Node:751E:0000:000E:40015B4D:000F:7F4B:
+23:4000E84B:Zu Cockerel:1048638C:Tini Poutini:0000:0000:0006:1048638C:000F:7FEF:
+23:40001614:Omega:10532971:Potato Chippy:0023:0000:0054:10532971:000F:0000:
+```
 
 The type of tether in the above three lines are `000E`, `0006`, and `0054` respectively.
 
@@ -799,11 +992,85 @@ Like [1B: NetworkTargetIcon (Head Markers)](#1b-networktargeticon-head-markers),
 Type is consistent across fights and represents a particular visual style of tether.
 
 There are also a number of examples where tethers are generated in some other way:
+
 * ultima aetheroplasm orbs: NpcSpawn parentActorId set to opposite orb
 * t12 redfire orb: NpcSpawn parentActorId set to target
 * t13 dark aether orbs: NpcSpawn parentActorId and targetId set to target player
 * Suzaku Extreme birbs: who knows
 * player to player tethers (dragonsight, cover, fairy tether)
+
+## 24: LimitBreak
+
+This log line is recorded every server tick where limit break energy is generated while in combat in a light or full party.
+(Generation is not recorded while at cap.)
+It starts at 0x0000 at the beginning of the instance (or encounter in the caseof a single-encounter instance,)
+and counts up by 0x00DC (220 decimal,) until the limit break is used,
+or the instance's maximum limit value is reached.
+This rate of increase is constant,
+but other actions taken can cause extra increments to happen independent of the base increase.
+(These other increments occur in the same packet as the base rate, but separately.)
+
+Each limit break bar is 0x2710 (10,000 decimal) units.
+Thus, the maximum possible recorded value would be 0x7530.
+
+Structure:
+`24:Limit Break: [Value]`
+
+Examples:
+
+```log
+24:Limit Break: 7530
+```
+
+## 25: NetworkEffectResult
+
+This log line appears to be recorded at any time an actor is targeted by a hostile action.
+It appears that the action must hit and must deal non-zero damage,
+OR must inflict its effect in order to generate this log line.
+Individual DoT ticks do not appear to generate separate lines.
+
+Structure:
+`25:[Player ObjectId]:[Sequence Number]:[Current HP]:[Max HP]:[Current MP]:[Max MP]:[Current TP]:[Max TP]:[Position X]:[Position Y]:[Position Z]:[Facing]:[packet data thereafter]`
+
+Examples:
+
+```log
+25:12345678:PlayerOne:0000132A:33635:35817:10000:10000:0::0.3841706:-207.8767:2.901163:-3.00212:03E8:2500:0:01:03000000:0:0:E0000000:
+```
+
+## 26: NetworkStatusEffects
+
+For NPC opponents (and possibly PvP) this log line is generated alongside `18:NetworkDoT` lines.
+For non-fairy allies, it is generated alongside [1A: NetworkBuff](https://github.com/quisquous/cactbot/blob/master/docs/LogGuide.md#1e-networkbuffremove),
+[1E: NetworkBuffRemove](https://github.com/quisquous/cactbot/blob/master/docs/LogGuide.md#1e-networkbuffremove),
+ and [25:NetworkEffectResult](https://github.com/quisquous/cactbot/blob/master/docs/LogGuide.md#25-networkeffectresult).
+
+Structure:
+`26:[Target Id]:[Target Name]:[Job Levels]:[Current HP]:[Max Hp]:[Current Mp]:[Max MP]:[Current TP]:[Max TP]:[Position X]:[Position Y]:[Position Z]:[Facing]:<status list; format unknown>`
+
+Examples:
+
+```log
+26:12345678:PlayerOne:3C503C1C:24136:24136:9045:10000:4:0:-0.4730835:-158.1598:-23.9:3.110625:03E8:45:0:020130:0:106501CA:0129:4172D113:106501CA:012A:4168C8B4:106501CA:012B:40919168:106501CA:0232:40E00000:E0000000:
+```
+
+It seems likely that this line was added in order to extend functionality
+for the `18`, `1A`, and `1E` log lines without breaking previous content or plugins.
+
+## 27: NetworkUpdateHP
+
+It's not completely clear what triggers this log line,
+but it contains basic information comparable to `25` and `26`.
+It applies to allies and fairies/pets.
+
+Structure:
+`27:[Target ID]:[Target Name]:[Current HP]:[Max HP]:[Current MP]:[Max MP]:[Current TP]:[Max TP]:[position X]:[position Y]:[position Z]:[Facing]`
+
+Examples:
+
+```log
+27:12345678:Eos:22851:22851:10000:10000:0:0:12.13086:-169.9398:-23.90031:-2.310888:
+```
 
 ### FB: Debug
 
@@ -843,7 +1110,7 @@ It'd be nice for folks to dig into network data to figure out how some specific 
 
 * Boss headmarkers for Lamebrix Strikebocks (both A10S and Eureka Pyros)
 * Running into insta-kill walls
-* Figure out how t13 Dark Aether and Suzaku Ex adds tether
+* Figure out how t13 Dark Aether and Suzaku EX adds tether
 * Find network data zone sealing so game log lines don't have to be used
 * Network data for Absolute Virtue clone buffs (they're currently just game log lines)
 * How to detect a wipe in older content like coil?

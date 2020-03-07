@@ -1,11 +1,11 @@
 'use strict';
 
 class CactbotLanguageJa extends CactbotLanguage {
-  constructor(playerName) {
-    super('ja', playerName);
+  constructor() {
+    super('ja');
   }
 
-  InitStrings(playerName) {
+  InitStrings() {
     this.kEffect = Object.freeze({
       BluntResistDown: '打属性耐性低下', // 0x23d, 0x335, 0x3a3
       VerstoneReady: 'ヴァルストーン効果アップ', // 0x4d3
@@ -21,7 +21,14 @@ class CactbotLanguageJa extends CactbotLanguage {
       Medicated: '強化薬', // tbc
       BattleLitany: 'バトルリタニー', // 0x312
       Embolden: 'エンボルデン', // 0x4d7
-      Balance: 'アーゼマの均衡', // 0x53a
+      Arrow: 'オシュオンの矢', // 0x75c
+      Balance: 'アーゼマの均衡', // 0x75a
+      Bole: '世界樹の幹', // 0x75b
+      Ewer: 'サリャクの水瓶', // 0x75e
+      Spear: 'ハルオーネの槍', // 0x75d
+      Spire: 'ビエルゴの塔', // 0x75f
+      LadyOfCrowns: 'クラウンレディ', // 0x755
+      LordOfCrowns: 'クラウンロード', // 0x754
       Hypercharge: 'ハイパーチャージ', // 0x2b0
       LeftEye: '竜の左眼', // 0x4a0
       RightEye: '竜の右眼', // 0x49f
@@ -29,13 +36,32 @@ class CactbotLanguageJa extends CactbotLanguage {
       Devotion: 'エギの加護', // 0x4bd
       FoeRequiem: '魔人のレクイエム', // up 0x8b, down 0x8c
       LeadenFist: '連撃効果アップ',
+      StormsEye: 'シュトルムブレハ',
+      Devilment: '攻めのタンゴ',
       TechnicalFinish: 'テクニカルフィニッシュ',
+      StandardFinish: 'スタンダードフィニッシュ',
+      Thundercloud: 'サンダー系魔法効果アップ',
+      Firestarter: 'ファイガ効果アップ',
+      BattleVoice: 'バトルボイス',
+      Divination: 'ディヴィネーション',
+      ArmysMuse: '軍神の加護',
+      ArmysEthos: '軍神の契約',
+      PresenceOfMind: '神速魔',
+      Shifu: '士風',
+      CircleOfPower: '黒魔紋：効果',
 
+      Paralysis: '麻痺',
       Petrification: '石化',
       BeyondDeath: '死の超越',
       Burns: '火傷',
       Sludge: '汚泥',
       Doom: '死の宣告',
+      StoneCurse: '石化の呪い',
+      Imp: 'カッパ',
+      Toad: 'トード',
+      FoolsTumble: '墜落幻覚', // 0x183
+      Dropsy: '水毒',
+      Throttle: '窒息',
 
       // UWU
       Windburn: '裂傷',
@@ -47,7 +73,7 @@ class CactbotLanguageJa extends CactbotLanguage {
     });
 
     this.countdownStartRegex = function() {
-      return Regexes.Parse(/戦闘開始まで(\y{Float})秒！/);
+      return Regexes.parse(/戦闘開始まで(\y{Float})秒！/);
     };
     this.countdownEngageRegex = function() {
       return /:戦闘開始！/;

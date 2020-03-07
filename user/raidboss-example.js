@@ -7,44 +7,6 @@
 // If there are errors in this file, they will appear in the OverlayPlugin.dll
 // log window in ACT.
 
-
-// If false, no timeline of upcoming events will be displayed during fights.
-Options.TimelineEnabled = true;
-
-// If false, triggers and timelines will not show or speak text, nor play
-// sounds.
-Options.AlertsEnabled = true;
-
-// If false, then visual text alerts are not shown for triggers.
-Options.TextAlertsEnabled = true;
-
-// If false, then sound alerts are not played.
-Options.SoundAlertsEnabled = true;
-
-// If true, then text-to-speech alerts are read aloud.  Text-to-speech takes
-// priority over custom sounds and text noises.  If a trigger does not have
-// a tts entry then it will fall back on text and sound (if turned on).
-Options.SpokenAlertsEnabled = false;
-
-// Will override the singular TTS alerts if a group alert is set for a specific trigger
-// Change phrasing to make sense in a group setting
-Options.GroupSpokenAlertsEnabled = false;
-
-
-// Show timer bars for events that will happen in this many seconds or less.
-Options.ShowTimerBarsAtSeconds = 30;
-
-// Once a timer bar reaches 0, keep it around this long after.
-Options.KeepExpiredTimerBarsForSeconds = 0.7;
-
-// Change the bar color to highlight it is coming up when this many seconds
-// are left on it.
-Options.BarExpiresSoonSeconds = 8;
-
-// Number of bars to show in the space given to the UI by css.
-Options.MaxNumberOfTimerBars = 6;
-
-
 // Path to sound played for info-priority text popups, or when "Info" is
 // specified as the sound name.
 Options.InfoSound = '../../resources/sounds/freesound/percussion_hit.ogg';
@@ -64,20 +26,8 @@ Options.LongSound = '../../resources/sounds/BigWigs/Long.ogg';
 // specified as the sound name.
 Options.PullSound = '../../resources/sounds/PowerAuras/sonar.ogg';
 
-// Volume between 0 and 1 to play the InfoSound at.
-Options.InfoSoundVolume = 1;
-
-// Volume between 0 and 1 to play the AlertSound at.
-Options.AlertSoundVolume = 1;
-
-// Volume between 0 and 1 to play the AlarmSound at.
-Options.AlarmSoundVolume = 1;
-
-// Volume between 0 and 1 to play the LongSound at.
-Options.LongSoundVolume = 1;
-
-// Volume between 0 and 1 to play the PullSound at.
-Options.PullSoundVolume = 1;
+// Remove these /* and */ comment lines to enable the example code below.
+/*
 
 // A set of nicknames to use for players, when trying to shorten names.
 Options.PlayerNicks = {
@@ -106,7 +56,7 @@ Options.Triggers = [
   // (1) Simple example trigger: show text on screen when you die.
   {
     // Match every zone.
-    zoneRegex: /.*/,
+    zoneRegex: /./,
     triggers: [
       {
         regex: /:You are defeated by/,
@@ -200,7 +150,7 @@ Options.Triggers = [
 //
 // Here's some example per trigger options that modify the test triggers
 // in Summerford Farms:
-// https://github.com/quisquous/cactbot/blob/master/ui/raidboss/data/triggers/test.js
+// https://github.com/quisquous/cactbot/blob/master/ui/raidboss/data/00-misc/test.js
 
 Options.PerTriggerOptions = {
   // Just like Options.DisabledTriggers, this is the trigger id to apply to.
@@ -244,3 +194,4 @@ Options.PerTriggerOptions = {
   },
 };
 
+*/

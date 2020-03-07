@@ -1,16 +1,15 @@
 'use strict';
 
-document.addEventListener('onZoneChangedEvent', function(e) {
+addOverlayListener('onZoneChangedEvent', function(e) {
   document.getElementById('currentZone').innerText = 'currentZone: ' + e.detail.zoneName;
 });
 
-document.addEventListener('onInCombatChangedEvent', function(e) {
+addOverlayListener('onInCombatChangedEvent', function(e) {
   document.getElementById('inCombat').innerText = 'inCombat: act: ' + (e.detail.inACTCombat ? 'yes' : 'no') + ' game: ' + (e.detail.inGameCombat ? 'yes' : 'no');
 });
 
-document.addEventListener('onPlayerChangedEvent', function(e) {
-  document.getElementById('id').innerText = e.detail.id.toString(16);
-  document.getElementById('hp').innerText = e.detail.currentHP + '/' + e.detail.maxHP;
+addOverlayListener('onPlayerChangedEvent', function(e) {
+  document.getElementById('hp').innerText = e.detail.currentHP + '/' + e.detail.maxHP + ' (' + e.detail.currentShield + ')';
   document.getElementById('mp').innerText = e.detail.currentMP + '/' + e.detail.maxMP;
   document.getElementById('cp').innerText = e.detail.currentCP + '/' + e.detail.maxCP;
   document.getElementById('gp').innerText = e.detail.currentGP + '/' + e.detail.maxGP;
@@ -22,27 +21,33 @@ document.addEventListener('onPlayerChangedEvent', function(e) {
   else if (e.detail.job == 'WAR')
     document.getElementById('jobinfo').innerText = jobDetail.beast;
   else if (e.detail.job == 'DRK')
-    document.getElementById('jobinfo').innerText = jobDetail.blood;
+    document.getElementById('jobinfo').innerText = jobDetail.blood + ' | ' + jobDetail.darksideMilliseconds;
   else if (e.detail.job == 'PLD')
     document.getElementById('jobinfo').innerText = jobDetail.oath;
+  else if (e.detail.job == 'GNB')
+    document.getElementById('jobinfo').innerText = jobDetail.cartridges + jobDetail.continuationState;
   else if (e.detail.job == 'BRD')
-    document.getElementById('jobinfo').innerText = jobDetail.songName + ' | ' + jobDetail.songProcs + ' | ' + jobDetail.songMilliseconds;
+    document.getElementById('jobinfo').innerText = jobDetail.songName + ' | ' + jobDetail.songProcs + ' | ' + jobDetail.soulGauge + ' | ' + jobDetail.songMilliseconds;
+  else if (e.detail.job == 'DNC')
+    document.getElementById('jobinfo').innerText = jobDetail.feathers + ' | (' + jobDetail.steps + ') | ' + jobDetail.currentStep;
   else if (e.detail.job == 'NIN')
     document.getElementById('jobinfo').innerText = jobDetail.hutonMilliseconds + ' | ' + jobDetail.ninkiAmount;
   else if (e.detail.job == 'DRG')
     document.getElementById('jobinfo').innerText = jobDetail.bloodMilliseconds + ' | ' + jobDetail.lifeMilliseconds + ' | ' + jobDetail.eyesAmount;
   else if (e.detail.job == 'BLM')
-    document.getElementById('jobinfo').innerText = jobDetail.umbralStacks + ' (' + jobDetail.umbralMilliseconds + ') | ' + jobDetail.umbralHearts + ' | ' + jobDetail.foulCount + ' ' + jobDetail.enochian + ' (' + jobDetail.nextPolygotMilliseconds + ')';
+    document.getElementById('jobinfo').innerText = jobDetail.umbralStacks + ' (' + jobDetail.umbralMilliseconds + ') | ' + jobDetail.umbralHearts + ' | ' + jobDetail.foulCount + ' ' + jobDetail.enochian + ' (' + jobDetail.nextPolyglotMilliseconds + ')';
   else if (e.detail.job == 'THM')
     document.getElementById('jobinfo').innerText = jobDetail.umbralStacks + ' (' + jobDetail.umbralMilliseconds + ')';
   else if (e.detail.job == 'WHM')
-    document.getElementById('jobinfo').innerText = jobDetail.lilies;
+    document.getElementById('jobinfo').innerText = jobDetail.lilyStacks + ' (' + jobDetail.lilyMilliseconds + ') | ' + jobDetail.bloodlilyStacks;
   else if (e.detail.job == 'SMN')
-    document.getElementById('jobinfo').innerText = jobDetail.aetherflowStacks + ' | ' + jobDetail.dreadwyrmStacks + ' | ' + jobDetail.bahamutStacks + ' ( ' + jobDetail.dreadwyrmMilliseconds + ' | ' + jobDetail.bahamutMilliseconds + ' )';
+    document.getElementById('jobinfo').innerText = jobDetail.aetherflowStacks + ' | ' + jobDetail.dreadwyrmStacks + ' | ' + jobDetail.bahamutStance + ' | ' + jobDetail.bahamutSummoned + ' ( ' + jobDetail.stanceMilliseconds + ') | ' + jobDetail.phoenixReady;
   else if (e.detail.job == 'SCH')
-    document.getElementById('jobinfo').innerText = jobDetail.aetherflowStacks + ' | ' + jobDetail.fairyGauge;
+    document.getElementById('jobinfo').innerText = jobDetail.aetherflowStacks + ' | ' + jobDetail.fairyGauge + ' | ' + jobDetail.fairyStatus + ' (' + jobDetail.fairyMilliseconds + ')';
   else if (e.detail.job == 'ACN')
     document.getElementById('jobinfo').innerText = jobDetail.aetherflowStacks;
+  else if (e.detail.job == 'AST')
+    document.getElementById('jobinfo').innerText = jobDetail.heldCard + ' (' + jobDetail.arcanums + ')';
   else if (e.detail.job == 'MNK')
     document.getElementById('jobinfo').innerText = jobDetail.lightningStacks + ' | ' + jobDetail.chakraStacks + ' (' + jobDetail.lightningMilliseconds + ')';
   else if (e.detail.job == 'PGL')
@@ -53,9 +58,11 @@ document.addEventListener('onPlayerChangedEvent', function(e) {
     document.getElementById('jobinfo').innerText = '';
 
   document.getElementById('pos').innerText = e.detail.pos.x + ',' + e.detail.pos.y + ',' + e.detail.pos.z;
+  document.getElementById('rotation').innerText = e.detail.rotation;
+  document.getElementById('bait').innerText = e.detail.bait;
 });
 
-document.addEventListener('onTargetChangedEvent', function(e) {
+addOverlayListener('onTargetChangedEvent', function(e) {
   if (!e.detail) {
     document.getElementById('target').innerText = '--';
     document.getElementById('tid').innerText = '';
@@ -67,19 +74,33 @@ document.addEventListener('onTargetChangedEvent', function(e) {
   }
 });
 
-document.addEventListener('onGameExistsEvent', function(e) {
+addOverlayListener('onGameExistsEvent', function(e) {
   // console.log("Game exists: " + e.detail.exists);
 });
 
-document.addEventListener('onGameActiveChangedEvent', function(e) {
+addOverlayListener('onGameActiveChangedEvent', function(e) {
   // console.log("Game active: " + e.detail.active);
 });
 
-document.addEventListener('onLogEvent', function(e) {
+addOverlayListener('onLogEvent', function(e) {
   for (let i = 0; i < e.detail.logs.length; i++) {
     // Match "/echo tts:<stuff>"
     let r = e.detail.logs[i].match('00:0038:tts:(.*)');
-    if (r)
-      OverlayPluginApi.overlayMessage(OverlayPluginApi.overlayName, JSON.stringify({ 'say': r[1] }));
+    if (r) {
+      callOverlayHandler({
+        call: 'cactbotSay',
+        text: r[1],
+      });
+    }
   }
 });
+
+addOverlayListener('onUserFileChanged', function(e) {
+  console.log(`User file ${e.file} changed!`);
+});
+
+addOverlayListener('FileChanged', function(e) {
+  console.log(`File ${e.file} changed!`);
+});
+
+callOverlayHandler({ call: 'cactbotRequestState' });

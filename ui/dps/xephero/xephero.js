@@ -14,9 +14,13 @@ function showOverlay() {
 }
 
 function update(dps) {
+  let encounter = dps.Encounter;
+  let rdps = parseFloat(encounter.encdps);
+  if (isNaN(rdps) || rdps == Infinity)
+    return;
+
   showOverlay();
 
-  let encounter = dps.Encounter;
   let combatants = dps.Combatant;
   let template = $('#overlaysource li');
   let overlay = $('#overlay');
@@ -28,8 +32,6 @@ function update(dps) {
   // for now, always just fully replace the content
 
   container.html('');
-
-  let rdps = parseFloat(encounter.encdps);
 
   // sanity check
   if (!isNaN(rdps) && rdps != Infinity)
@@ -155,16 +157,16 @@ function onOverlayDataUpdateEvent(e) {
   update(e.detail);
 }
 
-$(document).on('onZoneChangedEvent', function(e) {
-  let currentZone = e.originalEvent.detail.zoneName;
+addOverlayListener('onZoneChangedEvent', function(e) {
+  let currentZone = e.detail.zoneName;
   tracker.onZoneChange(currentZone);
 });
-$(document).on('onLogEvent', function(e) {
-  tracker.onLogEvent(e.originalEvent.detail.logs);
+addOverlayListener('onLogEvent', function(e) {
+  tracker.onLogEvent(e.detail.logs);
 });
-$(document).on('onInCombatChangedEvent', function(e) {
+addOverlayListener('onInCombatChangedEvent', function(e) {
   // Only clear phases when ACT starts a new encounter for consistency.
-  tracker.inCombatChanged(e.originalEvent.detail.inACTCombat);
+  tracker.inCombatChanged(e.detail.inACTCombat);
 });
 
 InitDpsModule('xephero', onOverlayDataUpdateEvent, hideOverlay);

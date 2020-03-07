@@ -6,7 +6,10 @@
   <link rel="stylesheet" href="../../resources/defaults.css">
   <link rel="stylesheet" href="../../resources/resize_handle.css">
   <script src="../../resources/common.js"></script>
+  <script src="../../resources/party.js"></script>
   <script src="../../resources/regexes.js"></script>
+  <script src="../../resources/conditions.js"></script>
+  <script src="../../resources/responses.js"></script>
   <script src="../../resources/resize_handle.js"></script>
   <script src="../../resources/timerbar.js"></script>
   <script src="../../resources/widgetlist.js"></script>
@@ -17,9 +20,14 @@
   <script src="../../resources/lang/fr.js"></script>
   <script src="../../resources/lang/ja.js"></script>
   <script src="../../resources/lang/ko.js"></script>
+  <script src="../../resources/lang/cn.js"></script>
   <!-- Cactbot Overlay Scripts-->
   <link rel="stylesheet" type="text/css" href="raidboss.css">
+  <script src="common_replacement.js"></script>
+  <script src="raidboss_config.js"></script>
   <script src="timeline.js"></script>
+  <script src="browser_tts_engine.js"></script>
+  <script src="autoplay_helper.js"></script>
   <script src="popup-text.js"></script>
   <script src="raidboss.js"></script>
   <script src="raidemulator.js"></script>
@@ -77,17 +85,4 @@
   </div>
   <div class="emulator-background"></div>
 </body>
-<script>
-  function hide(h) {
-    var hideWhenInactive = false;
-    if (h && hideWhenInactive)
-      document.getElementById("container").style.display = "none";
-    else
-      document.getElementById("container").style.display = "block";
-  }
-  document.addEventListener("onGameActiveChangedEvent", function(e) {
-      hide(!e.detail.active);
-  });
-  hide(true);
-</script>
 </html>

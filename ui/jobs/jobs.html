@@ -19,26 +19,13 @@
   <script src="../../resources/lang/fr.js"></script>
   <script src="../../resources/lang/ja.js"></script>
   <script src="../../resources/lang/ko.js"></script>
+  <script src="../../resources/lang/cn.js"></script>
 
   <link rel="stylesheet" href="jobs.css">
-  <script src="jobs-icons.js"></script>
   <script src="jobs.js"></script>
+  <script src="jobs_config.js"></script>
 </head>
 <body>
 <div id="container"></div>
 </body>
-
-<script>
-  function hide(h) {
-    var hideWhenInactive = false;
-    if (h && hideWhenInactive)
-      document.getElementById("container").style.display = "none";
-    else
-      document.getElementById("container").style.display = "block";
-  }
-  document.addEventListener("onGameActiveChangedEvent", function(e) {
-      hide(!e.detail.active);
-  });
-  hide(true);
-</script>
 </html>

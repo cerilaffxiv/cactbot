@@ -1,10 +1,6 @@
 'use strict';
 
 let Options = {
-  Debug: false,
-  Language: 'en',
-  NumLiveListItemsInCombat: 5,
-  MinimumTimeForPullMistake: 0.4,
   Triggers: [],
   PlayerNicks: {},
   DisabledTriggers: {},
@@ -98,6 +94,10 @@ let Options = {
     '2B70': 'Landslide',
     '2B71': 'Landslide',
     '2C18': 'Tumult',
+
+    // TEA
+    '4978': 'Attack',
+    '4979': 'Attack',
   },
 };
 
@@ -107,6 +107,8 @@ let kEarlyPullText = {
   // FIXME
   fr: 'early pull',
   ja: 'early pull',
+  cn: '抢开',
+  ko: '풀링 빠름',
 };
 
 let kLatePullText = {
@@ -115,6 +117,17 @@ let kLatePullText = {
   // FIXME
   fr: 'late pull',
   ja: 'late pull',
+  cn: '晚开',
+  ko: '풀링 늦음',
+};
+
+const kPartyWipeText = {
+  en: 'Party Wipe',
+  de: 'Party Wipe',
+  fr: 'Party Wipe',
+  ja: 'Party Wipe',
+  cn: '团灭',
+  ko: '파티 전멸',
 };
 
 // Internal trigger id for early pull
@@ -318,8 +331,6 @@ class OopsyLiveList {
 
   AddLine(iconClass, text, time) {
     let maxItems = this.options.NumLiveListItemsInCombat;
-    if (maxItems == 0)
-      return;
 
     let rowDiv;
     if (this.numItems < this.items.length)
@@ -541,7 +552,7 @@ class MistakeCollector {
     // wipe then (to make post-wipe deaths more obvious), however this
     // requires making liveList be able to insert items in a sorted
     // manner instead of just being append only.
-    this.OnFullMistakeText('wipe', null, 'Party Wipe');
+    this.OnFullMistakeText('wipe', null, kPartyWipeText[this.options.Language || 'en']);
     // Party wipe usually comes a few seconds after everybody dies
     // so this will clobber any late damage.
     this.StopCombat();
@@ -599,6 +610,12 @@ class DamageTracker {
     this.abilityTriggers = [];
     this.effectTriggers = [];
     this.healTriggers = [];
+
+    this.partyTracker = new PartyTracker();
+    addOverlayListener('PartyChanged', (e) => {
+      this.partyTracker.onPartyChanged(e);
+    });
+
     this.Reset();
   }
 
@@ -609,6 +626,7 @@ class DamageTracker {
       me: this.me,
       job: this.job,
       role: this.role,
+      party: this.partyTracker,
       inCombat: this.inCombat,
       ShortName: ShortNamify,
       IsPlayerId: IsPlayerId,
@@ -751,19 +769,28 @@ class DamageTracker {
     for (let i = 0; i < this.effectTriggers.length; ++i) {
       let trigger = this.effectTriggers[i];
       let matches;
-      if (trigger.gainRegex)
+      let isGainLine;
+      if (trigger.gainRegex) {
         matches = line.match(trigger.gainRegex);
-      if (!matches && trigger.loseRegex)
+        if (matches)
+          isGainLine = true;
+      }
+      if (!matches && trigger.loseRegex) {
         matches = line.match(trigger.loseRegex);
+        if (matches)
+          isGainLine = false;
+      }
       if (matches == null)
         continue;
+      // TODO: just pass groups on through, and change `attacker` to `source`.
+      let g = matches.groups;
       if (!evt) {
         evt = {
-          targetName: matches[1],
-          effectName: matches[2],
-          attackerName: matches[3],
-          gains: !!matches[4],
-          durationSeconds: matches[4] ? parseFloat(matches[4]) : undefined,
+          targetName: g.target,
+          effectName: g.effect,
+          attackerName: g.source,
+          gains: isGainLine,
+          durationSeconds: g.duration,
         };
       }
       this.OnTrigger(trigger, evt, null);
@@ -856,8 +883,10 @@ class DamageTracker {
       }
       if ('deathReason' in trigger) {
         let ret = ValueOrFunction(trigger.deathReason, eventOrEvents);
-        ret.reason = this.Translate(ret.reason);
-        this.AddImpliedDeathReason(ret);
+        if (ret) {
+          ret.reason = this.Translate(ret.reason);
+          this.AddImpliedDeathReason(ret);
+        }
       }
       if ('run' in trigger)
         ValueOrFunction(trigger.run, eventOrEvents);
@@ -901,7 +930,7 @@ class DamageTracker {
       let trigger = {
         id: key,
         damageRegex: id,
-        idRegex: Regexes.Parse('^' + id + '$'),
+        idRegex: Regexes.parse('^' + id + '$'),
         mistake: function(e, data) {
           return { type: type, blame: e.targetName, text: e.abilityName };
         },
@@ -945,27 +974,27 @@ class DamageTracker {
       for (let j = 0; j < set.triggers.length; ++j) {
         let trigger = set.triggers[j];
         if ('regex' in trigger) {
-          trigger.regex = Regexes.Parse(trigger.regex);
+          trigger.regex = Regexes.parse(trigger.regex);
           this.generalTriggers.push(trigger);
         }
         if ('damageRegex' in trigger) {
-          trigger.idRegex = Regexes.Parse('^' + trigger.damageRegex + '$');
+          trigger.idRegex = Regexes.parse('^' + trigger.damageRegex + '$');
           this.damageTriggers.push(trigger);
         }
         if ('abilityRegex' in trigger) {
-          trigger.idRegex = Regexes.Parse('^' + trigger.abilityRegex + '$');
+          trigger.idRegex = Regexes.parse('^' + trigger.abilityRegex + '$');
           this.abilityTriggers.push(trigger);
         }
         if ('gainsEffectRegex' in trigger) {
-          trigger.gainRegex = gLang.gainsEffectRegex('(' + trigger.gainsEffectRegex + ')', '(\\y{Name})', '(.*?)');
+          trigger.gainRegex = Regexes.gainsEffect({ effect: trigger.gainsEffectRegex });
           this.effectTriggers.push(trigger);
         }
         if ('losesEffectRegex' in trigger) {
-          trigger.loseRegex = gLang.losesEffectRegex('(' + trigger.losesEffectRegex + ')', '(\\y{Name})', '(.*?)');
+          trigger.loseRegex = Regexes.losesEffect({ effect: trigger.losesEffectRegex });
           this.effectTriggers.push(trigger);
         }
         if ('healRegex' in trigger) {
-          trigger.idRegex = Regexes.Parse('^' + trigger.healRegex + '$');
+          trigger.idRegex = Regexes.parse('^' + trigger.healRegex + '$');
           this.healTriggers.push(trigger);
         }
       }
@@ -1027,29 +1056,34 @@ class DamageTracker {
   }
 }
 
-document.addEventListener('onLogEvent', function(e) {
-  gDamageTracker.OnLogEvent(e);
-});
-document.addEventListener('onPartyWipe', function(e) {
-  gDamageTracker.OnPartyWipeEvent(e);
-});
-document.addEventListener('onZoneChangedEvent', function(e) {
-  gDamageTracker.OnZoneChangeEvent(e);
-  gMistakeCollector.OnZoneChangeEvent(e);
-});
-document.addEventListener('onInCombatChangedEvent', function(e) {
-  gDamageTracker.OnInCombatChangedEvent(e);
-  gMistakeCollector.OnInCombatChangedEvent(e);
-});
-document.addEventListener('onDataFilesRead', function(e) {
-  gDamageTracker.OnDataFilesRead(e);
-});
-document.addEventListener('onPlayerChangedEvent', function(e) {
-  gDamageTracker.OnPlayerChange(e);
-});
-
 UserConfig.getUserConfigLocation('oopsyraidsy', function(e) {
   gLiveList = new OopsyLiveList(Options, document.getElementById('livelist'));
   gMistakeCollector = new MistakeCollector(Options, gLiveList);
   gDamageTracker = new DamageTracker(Options, gMistakeCollector);
+
+  addOverlayListener('onLogEvent', function(e) {
+    gDamageTracker.OnLogEvent(e);
+  });
+  addOverlayListener('onPartyWipe', function(e) {
+    gDamageTracker.OnPartyWipeEvent(e);
+  });
+  addOverlayListener('onZoneChangedEvent', function(e) {
+    gDamageTracker.OnZoneChangeEvent(e);
+    gMistakeCollector.OnZoneChangeEvent(e);
+  });
+  addOverlayListener('onInCombatChangedEvent', function(e) {
+    gDamageTracker.OnInCombatChangedEvent(e);
+    gMistakeCollector.OnInCombatChangedEvent(e);
+  });
+
+  callOverlayHandler({
+    call: 'cactbotReadDataFiles',
+    source: location.href,
+  }).then((r) => gDamageTracker.OnDataFilesRead(r));
+
+  addOverlayListener('onPlayerChangedEvent', function(e) {
+    gDamageTracker.OnPlayerChange(e);
+  });
+
+  callOverlayHandler({ call: 'cactbotRequestPlayerUpdate' });
 });

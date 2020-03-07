@@ -12,9 +12,9 @@ function computeBackgroundColorFrom(element, classList) {
 }
 
 // This class reads the format of ACT Timeline plugin, described in
-// data/timelines/README.txt.
+// data/README.txt.
 class Timeline {
-  constructor(text, replacements, triggers, options) {
+  constructor(text, replacements, triggers, styles, options) {
     this.options = options;
     this.replacements = replacements;
 
@@ -34,7 +34,7 @@ class Timeline {
     this.activeEvents = [];
     // Sorted by line.
     this.errors = [];
-    this.LoadFile(text, triggers);
+    this.LoadFile(text, triggers, styles);
     this.Stop();
   }
 
@@ -44,15 +44,21 @@ class Timeline {
 
     let orig = text;
     let locale = this.options.Language || 'en';
-    for (let i = 0; i < this.replacements.length; ++i) {
-      let r = this.replacements[i];
+    for (let r of this.replacements) {
       if (r.locale && r.locale != locale)
         continue;
       if (!r[replaceKey])
         continue;
       let keys = Object.keys(r[replaceKey]);
-      for (let j = 0; j < keys.length; ++j)
-        text = text.replace(Regexes.Parse(keys[j]), r[replaceKey][keys[j]]);
+      for (let key of keys)
+        text = text.replace(Regexes.parse(key), r[replaceKey][key]);
+    }
+    // Common Replacements
+    for (let key in commonReplacement) {
+      let repl = commonReplacement[key][locale];
+      if (!repl)
+        continue;
+      text = text.replace(Regexes.parse(key), repl);
     }
     return text;
   }
@@ -65,7 +71,20 @@ class Timeline {
     return this.GetReplacedHelper(sync, 'replaceSync');
   }
 
-  LoadFile(text, triggers) {
+  GetMissingTranslationsToIgnore() {
+    return [
+      '--Reset--',
+      '--sync--',
+      'Start',
+      '^ ?21:',
+      '^(\\^\\.\\{14\\})? ?1B:',
+      '^(\\^\\.\\{14\\})? ?21:',
+      '^::\\y{AbilityCode}:$',
+      '^\\.\\*$',
+    ].map((x) => Regexes.parse(x));
+  }
+
+  LoadFile(text, triggers, styles) {
     this.events = [];
     this.syncStarts = [];
     this.syncEnds = [];
@@ -75,6 +94,7 @@ class Timeline {
 
     let lines = text.split('\n');
     for (let i = 0; i < lines.length; ++i) {
+      let lineNumber = i + 1;
       let line = lines[i];
       line = line.trim();
       // Drop comments and empty lines.
@@ -122,7 +142,7 @@ class Timeline {
       match = line.match(/^(([0-9]+(?:\.[0-9]+)?)\s+"(.*?)")(\s+(.*))?/);
       if (match == null) {
         this.errors.push({
-          lineNumber: i,
+          lineNumber: lineNumber,
           line: originalLine,
           error: 'Invalid format',
         });
@@ -142,6 +162,7 @@ class Timeline {
         // The text to display.  Not used for any logic.
         text: this.GetReplacedText(match[3]),
         activeTime: 0,
+        lineNumber: lineNumber,
       };
       if (line) {
         let commandMatch = line.match(/(?:[^#]*?\s)?(duration\s+([0-9]+(?:\.[0-9]+)?))(\s.*)?$/);
@@ -154,10 +175,11 @@ class Timeline {
           line = line.replace(commandMatch[1], '').trim();
           let sync = {
             id: uniqueid,
-            regex: Regexes.Parse(this.GetReplacedSync(commandMatch[2])),
+            regex: Regexes.parse(this.GetReplacedSync(commandMatch[2])),
             start: seconds - 2.5,
             end: seconds + 2.5,
             time: seconds,
+            lineNumber: lineNumber,
           };
           if (commandMatch[3]) {
             let argMatch = commandMatch[3].match(/(?:[^#]*?\s)?(window\s+(?:([0-9]+(?:\.[0-9]+)?),)?([0-9]+(?:\.[0-9]+)?))(?:\s.*)?$/);
@@ -185,7 +207,7 @@ class Timeline {
       if (line && !line.match(/^\s*#/)) {
         console.log('Unknown content \'' + line + '\' in timeline: ' + originalLine);
         this.errors.push({
-          lineNumber: i,
+          lineNumber: lineNumber,
           line: originalLine,
           error: 'Extra text',
         });
@@ -222,6 +244,15 @@ class Timeline {
             trigger: trigger,
             matches: m,
           });
+        }
+      }
+
+      if (styles) {
+        for (const style of styles) {
+          const m = e.name.match(style.regex);
+          if (!m)
+            continue;
+          Object.assign(e, { style: style.style });
         }
       }
     }
@@ -532,21 +563,26 @@ class Timeline {
   SetSyncTime(c) {
     this.syncTimeCallback = c;
   }
-};
+}
 
 class TimelineUI {
   constructor(options) {
     this.options = options;
     this.init = false;
+
+    this.InitDebugUI();
   }
 
   Init() {
-    if (this.init) return;
+    if (this.init)
+      return;
     this.init = true;
 
     this.root = document.getElementById('timeline-container');
     if (Options.Language)
       this.root.classList.add('lang-' + Options.Language);
+    if (Options.Skin)
+      this.root.classList.add('skin-' + Options.Skin);
 
     this.barWidth = window.getComputedStyle(this.root).width;
     let windowHeight = parseFloat(window.getComputedStyle(this.root).height.match(/([0-9.]+)px/)[1]);
@@ -562,6 +598,20 @@ class TimelineUI {
     this.timerlist.elementheight = this.barHeight + 2;
     this.timerlist.toward = 'down right';
 
+    this.activeBars = {};
+    this.expireTimers = {};
+  }
+
+  InitDebugUI() {
+    let timelineText = [
+      'These lines are',
+      'debug timeline entries.',
+      'If you lock the overlay,',
+      'they will disappear!',
+      'Real timelines automatically',
+      'appear when supported.',
+    ];
+
     // Helper for positioning/resizing when locked.
     let helper = document.getElementById('timeline-resize-helper');
     for (let i = 0; i < this.options.MaxNumberOfTimerBars; ++i) {
@@ -571,7 +621,10 @@ class TimelineUI {
       helperBar.classList.add('timeline-bar-color');
       if (i < 1)
         helperBar.classList.add('soon');
-      helperBar.innerText = 'Test bar ' + (i + 1);
+      if (i < timelineText.length)
+        helperBar.innerText = timelineText[i];
+      else
+        helperBar.innerText = 'Test bar ' + (i + 1);
       helper.appendChild(helperBar);
       let borderWidth = parseFloat(window.getComputedStyle(helperBar).borderWidth.match(/([0-9.]+)px/)[1]);
       helperBar.style.width = this.barWidth - borderWidth * 2;
@@ -579,9 +632,6 @@ class TimelineUI {
     }
 
     this.debugElement = document.getElementById('timeline-debug');
-
-    this.activeBars = {};
-    this.expireTimers = {};
   }
 
   SetPopupTextInterface(popupText) {
@@ -630,6 +680,9 @@ class TimelineUI {
     bar.lefttext = e.text;
     bar.toward = 'right';
     bar.style = !channeling ? 'fill' : 'empty';
+
+    if (e.style)
+      bar.applyStyles(e.style);
 
     if (!channeling && e.time - fightNow > this.options.BarExpiresSoonSeconds) {
       bar.fg = this.barColor;
@@ -720,14 +773,15 @@ class TimelineUI {
     this.debugFightTimer.elapsed = 0;
     this.debugFightTimer.elapsed = fightNow;
   }
-};
+}
 
 class TimelineController {
   constructor(options, ui) {
     this.options = options;
     this.ui = ui;
     this.dataFiles = {};
-    this.timelines = {};
+    // data files not sent yet.
+    this.timelines = null;
   }
 
   SetPopupTextInterface(popupText) {
@@ -746,11 +800,8 @@ class TimelineController {
       this.activeTimeline.OnLogLine(e.detail.logs[i]);
   }
 
-  SetActiveTimeline(timelineFiles, timelines, replacements, triggers) {
+  SetActiveTimeline(timelineFiles, timelines, replacements, triggers, styles) {
     this.activeTimeline = null;
-
-    if (!this.options.TimelineEnabled)
-      return;
 
     let text = '';
 
@@ -767,23 +818,20 @@ class TimelineController {
       text = text + '\n' + timelines[i];
 
     if (text)
-      this.activeTimeline = new Timeline(text, replacements, triggers, this.options);
+      this.activeTimeline = new Timeline(text, replacements, triggers, styles, this.options);
     this.ui.SetTimeline(this.activeTimeline);
+  }
+
+  IsReady() {
+    return this.timelines !== null;
   }
 
   SetDataFiles(files) {
     this.timelines = {};
     for (let f in files) {
-      // Reads from the data/timelines/ directory.
-      if (!f.startsWith('timelines/'))
+      if (!f.endsWith('.txt'))
         continue;
-
-      let name = f;
-      // Drop leading directory names.
-      if (name.indexOf('/') >= 0)
-        name = name.split('/').slice(-1)[0];
-
-      this.timelines[name] = files[f];
+      this.timelines[f] = files[f];
     }
   }
 }
@@ -793,8 +841,18 @@ class TimelineLoader {
     this.timelineController = timelineController;
   }
 
-  SetTimelines(timelineFiles, timelines, replacements, triggers) {
-    this.timelineController.SetActiveTimeline(timelineFiles, timelines, replacements, triggers);
+  SetTimelines(timelineFiles, timelines, replacements, triggers, styles) {
+    this.timelineController.SetActiveTimeline(
+        timelineFiles,
+        timelines,
+        replacements,
+        triggers,
+        styles,
+    );
+  }
+
+  IsReady() {
+    return this.timelineController.IsReady();
   }
 
   StopCombat() {

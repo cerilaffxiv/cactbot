@@ -4,6 +4,8 @@ let gLang = null;
 
 class CactbotLanguage {
   constructor(lang) {
+    this.InitStrings();
+
     this.lang = lang;
     this.playerName = null;
     this.kAbility = Object.freeze({
@@ -42,7 +44,7 @@ class CactbotLanguage {
       TrickAttack: '8D2',
       Embolden: '1D60',
       Aetherflow: 'A6',
-      ChainStrategem: '1D0C',
+      ChainStratagem: '1D0C',
       Hypercharge: 'B45',
       Adloquium: 'B9',
       RabbitMedium: '8E0',
@@ -82,13 +84,17 @@ class CactbotLanguage {
       OffGuard: '2C93',
       SongOfTorment: '2C7A',
       PeculiarLight: '2C9D',
-      Overpower: '29',
       MythrilTempest: '404E',
       Prominence: '4049',
       HolyCircle: '404A',
       Confiteor: '404B',
       FourPointFury: '4059',
       TechnicalFinish: '3F44',
+      Thunder1: '90',
+      Thunder2: '94',
+      Thunder3: '99',
+      Thunder4: '1CFC',
+      Divination: '40A8',
 
       // Susano Ex
       ChurningDeep: '203F',
@@ -160,6 +166,14 @@ class CactbotLanguage {
       O10S: /Alphascape V2\.0 \(Savage\)/,
       O11S: /Alphascape V3\.0 \(Savage\)/,
       O12S: /Alphascape V4\.0 \(Savage\)/,
+      E1S: /Eden's Gate: Resurrection \(Savage\)/,
+      E2S: /Eden's Gate: Descent \(Savage\)/,
+      E3S: /Eden's Gate: Inundation \(Savage\)/,
+      E4S: /Eden's Gate: Sepulture \(Savage\)/,
+      E5S: /Eden's Verse: Fulmination \(Savage\)/,
+      E6S: /Eden's Verse: Furor \(Savage\)/,
+      E7S: /Eden's Verse: Iconoclasm \(Savage\)/,
+      E8S: /Eden's Verse: Refulgence \(Savage\)/,
       PvpSeize: /Seal Rock \(Seize\)/,
       PvpSecure: /The Borderland Ruins \(Secure\)/,
       PvpShatter: /The Fields Of Glory \(Shatter\)/,
@@ -170,81 +184,7 @@ class CactbotLanguage {
     });
   }
 
-  InitStrings(playerName) {
+  InitStrings() {
     console.error('Derived language class must implement InitStrings');
   }
-
-  OnPlayerNameChange(playerName) {
-    this.playerName = playerName;
-    this.InitStrings(playerName);
-  }
-
-  // Due to this bug: https://github.com/ravahn/FFXIV_ACT_Plugin/issues/100
-  // We can not look for log messages from FFXIV "You use X" here. Instead we
-  // look for the actual ability usage provided by the XIV plugin.
-  // Also, the networked parse info is given much quicker than the lines
-  // from the game.
-  youUseAbilityRegex(ids) {
-    return Regexes.Parse(' 1[56]:\\y{ObjectId}:' + this.playerName + ':' + Regexes.AnyOf(ids) + ':');
-  };
-
-  youStartUsingRegex(ids) {
-    return Regexes.Parse(' 14:' + Regexes.AnyOf(ids) + ':' + this.playerName + ' starts using ');
-  };
-
-  youGainEffectRegex() {
-    let effects = [];
-    for (let i = 0; i < arguments.length; ++i) {
-      let effect = arguments[i];
-      effects.push(effect);
-    }
-    return Regexes.Parse(' 1A:\\y{ObjectId}:' + this.playerName + ' gains the effect of ' + Regexes.AnyOf(effects) + ' from .* for (\\y{Float}) Seconds\\.');
-  };
-
-  youLoseEffectRegex() {
-    let effects = [];
-    for (let i = 0; i < arguments.length; ++i) {
-      let effect = arguments[i];
-      effects.push(effect);
-    }
-    return Regexes.Parse(' 1E:\\y{ObjectId}:' + this.playerName + ' loses the effect of ' + Regexes.AnyOf(effects) + ' from .*\\.');
-  };
-
-  abilityRegex(abilityId, attacker, target, flags) {
-    if (!abilityId)
-      abilityId = '[^:]*';
-    if (!attacker)
-      attacker = '[^:]*';
-    // type:attackerId:attackerName:abilId:abilName:targetId:targetName:flags:
-    let r = ' 1[56]:\\y{ObjectId}:' + attacker + ':' + abilityId + ':';
-    if (target || flags) {
-      if (!target)
-        target = '[^:]*';
-      if (!flags)
-        flags = '[^:]*';
-      r += '[^:]*:\\y{ObjectId}:' + target + ':' + flags + ':';
-    }
-    return Regexes.Parse(r);
-  };
-
-  gainsEffectRegex(effect, target, attacker) {
-    if (!target)
-      target = '[^:]*';
-    if (!attacker)
-      attacker = '[^:]*';
-    return Regexes.Parse(' 1A:\\y{ObjectId}:' + target + ' gains the effect of ' + effect + ' from ' + attacker + ' for (\\y{Float}) Seconds\\.');
-  };
-
-  losesEffectRegex(effect, target, attacker) {
-    if (!target)
-      target = '[^:]*';
-    if (!attacker)
-      attacker = '[^:]*';
-    return Regexes.Parse(' 1E:\\y{ObjectId}:' + target + ' loses the effect of ' + effect + ' from ' + attacker + '\\.');
-  };
-};
-
-document.addEventListener('onPlayerChangedEvent', (function(e) {
-  if (gLang)
-    gLang.OnPlayerNameChange(e.detail.name);
-}));
+}

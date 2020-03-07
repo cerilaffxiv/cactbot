@@ -1,11 +1,11 @@
 'use strict';
 
 class CactbotLanguageDe extends CactbotLanguage {
-  constructor(playerName) {
-    super('de', playerName);
+  constructor() {
+    super('de');
   }
 
-  InitStrings(playerName) {
+  InitStrings() {
     this.kEffect = Object.freeze({
       BluntResistDown: 'Schlagresistenz -', // 0x23d, 0x335, 0x3a3
       VerstoneReady: 'Erzstein-bereit', // 0x4d3
@@ -21,7 +21,14 @@ class CactbotLanguageDe extends CactbotLanguage {
       Medicated: 'Stärkung', // tbc
       BattleLitany: 'Litanei Der Schlacht', // 0x312
       Embolden: 'Ermutigen', // 0x4d7
-      Balance: 'Waage', // 0x53a
+      Arrow: 'Kraft Des Pfeils', // 0x75c
+      Balance: 'Kraft Der Waage', // 0x75a
+      Bole: 'Kraft Der Eiche', // 0x75b
+      Ewer: 'Kraft Des Krugs', // 0x75e
+      Spear: 'Kraft Des Speers', // 0x75d
+      Spire: 'Kraft Des Turms', // 0x75f
+      LadyOfCrowns: 'Königin Der Kronen', // 0x755
+      LordOfCrowns: 'König Der Kronen', // 0x754
       Hypercharge: 'Hyperladung', // 0x2b0
       LeftEye: 'Linkes Drachenauge', // 0x4a0
       RightEye: 'Rechtes Drachenauge', // 0x49f
@@ -29,13 +36,32 @@ class CactbotLanguageDe extends CactbotLanguage {
       Devotion: 'Hingabe', // 0x4bd
       FoeRequiem: 'Requiem Der Feinde', // up 0x8b, down 0x8c
       LeadenFist: 'Verbesserter Schlag auf Schlag',
+      StormsEye: 'Sturmbrecher',
+      Devilment: 'Todestango',
       TechnicalFinish: 'Komplexes Finale',
+      StandardFinish: 'Einfaches Finale',
+      Thundercloud: 'Blitz +',
+      Firestarter: 'Feuga +',
+      BattleVoice: 'Ode an die Seele',
+      Divination: 'Weissagung',
+      ArmysMuse: 'Gunst des Schlachtensängers',
+      ArmysEthos: 'Beistand des Schlachtensängers',
+      PresenceOfMind: 'Geistesgegenwart',
+      Shifu: 'Shifu',
+      CircleOfPower: 'Ley-Linien',
 
+      Paralysis: 'Paralyse',
       Petrification: 'Stein',
       BeyondDeath: 'Jenseits Des Jenseits',
       Burns: 'Brandwunde',
       Sludge: 'Schlamm',
       Doom: 'Verhängnis',
+      StoneCurse: 'Steinfluch',
+      Imp: 'Flusskobold',
+      Toad: 'Frosch',
+      FoolsTumble: 'Trügerischer Sturz', // 0x183
+      Dropsy: 'Wassersucht',
+      Throttle: 'Erstickung',
     });
 
     this.kUIStrings = Object.freeze({
@@ -44,7 +70,7 @@ class CactbotLanguageDe extends CactbotLanguage {
     });
 
     this.countdownStartRegex = function() {
-      return Regexes.Parse(/Noch (\y{Float}) Sekunden bis Kampfbeginn!/);
+      return Regexes.parse(/Noch (\y{Float}) Sekunden bis Kampfbeginn!/);
     };
     this.countdownEngageRegex = function() {
       return /:Start!/;
@@ -53,10 +79,10 @@ class CactbotLanguageDe extends CactbotLanguage {
       return /:(\y{Name}) hat den Countdown abgebrochen/;
     };
     this.areaSealRegex = function() {
-      return /:Noch (\y{float}) Sekunden bis sich der Zugang zu (.*) schließt/;
+      return /:Noch (\y{float}) Sekunden, bis sich (.*) schließt/;
     };
     this.areaUnsealRegex = function() {
-      return /:Der Zugang zu (.*) öffnet sich erneut/;
+      return /:(.*) öffnet sich erneut/;
     };
   }
 }
